@@ -2204,16 +2204,7 @@ Strophe.Connection.prototype = {
             // setup timeout handler
             this._disconnectTimeout = this._addSysTimedHandler(
                 3000, this._onDisconnectTimeout.bind(this));
-            if (this.protocol === Strophe.ProtocolType.WEBSOCKET) {
-                this.send(pres);
-                var close = '</stream:stream>'
-                this.connection.xmlOutput(close);
-                this.connection.rawOutput(close);
-                this.socket.send(close)
-                this.socket.close(); // Close the socket
-            } else {
-                this._sendTerminate(pres);
-            }
+            this.po.disconnect(pres);
         }
     },
 
@@ -3673,6 +3664,11 @@ Strophe.Bosh.prototype = {
         clearTimeout(this._c._idleTimeout);
     },
 
+    disconnect: function (pres)
+    {
+        this._sendTerminate(pres);
+    },
+
     /** PrivateFunction: _connect_cb
      *  _Private_ handler for initial connection request.
      *
@@ -3828,6 +3824,16 @@ Strophe.Websocket.prototype = {
     {
         clearTimeout(this._c._idleTimeout);
         this._c._onIdle.bind(this._c)();
+    },
+
+    disconnect: function (pres)
+    {
+        this._c.send(pres);
+        var close = '</stream:stream>';
+        this._c.xmlOutput(close);
+        this._c.rawOutput(close);
+        this.socket.send(close);
+        this.socket.close(); // Close the socket
     },
 
     /** PrivateFunction: _buildStream
