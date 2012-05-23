@@ -2061,13 +2061,8 @@ Strophe.Connection.prototype = {
     {
         this._data.push("restart");
 
-        if (this.protocol === Strophe.ProtocolType.WEBSOCKET) {
-            clearTimeout(this._idleTimeout);
-            this._onIdle.bind(this)();
-        } else {
-            this._throttledRequestHandler();
-            clearTimeout(this._idleTimeout);
-        }
+        this.po._sendRestart();
+
         this._idleTimeout = setTimeout(this._onIdle.bind(this), 100);
     },
 
@@ -3667,6 +3662,17 @@ Strophe.Bosh.prototype = {
         if (this.errors > 4) {
             this._onDisconnectTimeout();
         }
+    },
+
+    /** PrivateFunction: _sendRestart
+     *  Send an xmpp:restart stanza.
+     */
+    _sendRestart: function ()
+    {
+        this._throttledRequestHandler();
+        clearTimeout(this._c._idleTimeout);
+    },
+
     /** PrivateFunction: _connect_cb
      *  _Private_ handler for initial connection request.
      *
@@ -3813,6 +3819,15 @@ Strophe.Websocket.prototype = {
 
     send: function () {
         this._c.flush();
+    },
+
+    /** PrivateFunction: _sendRestart
+     *  Send an xmpp:restart stanza.
+     */
+    _sendRestart: function ()
+    {
+        clearTimeout(this._c._idleTimeout);
+        this._c._onIdle.bind(this._c)();
     },
 
     /** PrivateFunction: _buildStream
